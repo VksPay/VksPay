@@ -1,0 +1,15 @@
+{
+  "name": "vkspay-test",
+  "dependencies": {},
+	"private": true,
+	"cloudfunction-config": {
+	  "concurrency": 1,
+	  "memorySize": 512,
+	  "path": "/vkspay",
+	  "timeout": 60,
+	  "triggers": [],
+	  "runtime": "Nodejs12",
+	  "keepRunningAfterReturn": false
+	},
+  "extensions": {}
+}
