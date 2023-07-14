@@ -42,7 +42,7 @@
 		<view class="pay-qrcode-popup" v-if="qrcodePopup.show">
 			<view class="pay-qrcode-popup-mask" @click="closePopup"></view>
 			<view class="pay-qrcode-popup-content">
-				<vk-uni-qrcode :text="payUrl" :size="225" unit="px"></vk-uni-qrcode>
+				<vk-uni-qrcode ref="qrcode" :text="payUrl" :size="225" unit="px"></vk-uni-qrcode>
 				<view class="pay-qrcode-popup-info">
 					<view>
 						<text class="pay-qrcode-popup-info-fee">{{ formData.total_fee }}</text>
@@ -169,21 +169,57 @@ export default {
 				window.location.href = payMode.url;
 			} else if (payMode.mode === "scheme") {
 				// 跳转scheme协议支付
-				let itemList = ["微信支付","支付宝"];
+				let itemList = ["支付宝","微信支付"];
 				uni.showActionSheet({
-					itemList:["微信支付","支付宝"],
+					itemList:itemList,
 					success: (e) => {
 						let item = itemList[e.tapIndex];
 						if (item === "微信支付") {
 							// 如果是微信支付，需要弹窗二维码，让用户保存图片，再自动打开微信调用扫一扫，选择刚保存的图片
+							// #ifdef APP
+							// APP可以先帮用户截屏
+							this.openQrcodePopup({
+								url:  payMode.url,
+								total_fee: total_fee,
+								mode: "scheme",
+								type: "wxpay"
+							});
+							setTimeout(() => {
+								let base64 = this.$refs.qrcode.getBase64();
+								uni.saveImageToPhotosAlbum({
+									filePath: base64,
+									success: () => {
+										uni.showToast({
+											title: "支付二维码已保存到您的相册",
+											icon: "none"
+										});
+									},
+									complete: () => {
+										// 不管成功失败都跳微信APP
+										setTimeout(() => {
+											plus.runtime.openURL(payMode.wxpay);
+										}, 500);
+									}
+								});
+							}, 1000);
+							// #endif
+
+							// #ifndef APP
 							this.openQrcodePopup({
 								url:  payMode.wxpay,
 								total_fee: total_fee,
 								mode: "scheme",
 								type: "wxpay"
 							});
+							// #endif
 						} else {
+							// #ifdef APP
+							plus.runtime.openURL(payMode.alipay);
+							//window.open(payMode.alipay);
+							// #endif
+							// #ifndef APP
 							window.location.href = payMode.alipay;
+							// #endif
 						}
 					}
 				});
@@ -202,6 +238,7 @@ export default {
 			};
 			// 其他环境则直接访问url即可支付
 		},
+		// 跳转到微信并打开扫一扫
 		toWeixinScanqrcode(){
 			window.location.href = "weixin://scanqrcode";
 		},
@@ -213,6 +250,68 @@ export default {
 			this.qrcodePopup.type = type;
 			this.payUrl = url;
 			if (total_fee) this.formData.total_fee = total_fee;
+		},
+		// 支付模式
+		getPayMode(obj){
+			let {
+				url
+			} = obj;
+			let data = {
+				mode: "qrcode", // 扫码支付
+				url
+			};
+			// #ifdef H5
+			if (["h5-weixin", "h5-alipay"].indexOf(this.h5Env) > -1) {
+				data = {
+					mode: "link",
+					url,
+					alipay: url,
+					wxpay: url
+				}
+			} else {
+				// 如果是手机，也不需要
+				if (this.h5PlatformCom !== "pc") {
+					data = {
+						mode: "scheme",
+						url,
+						alipay: `alipays://platformapi/startapp?appId=20000067&url=${encodeURIComponent(url)}`,
+						wxpay: url
+					}
+				} else {
+					// 如果是电脑，则弹窗扫码支付
+					data = {
+						mode: "qrcode",
+						url,
+						alipay: url,
+						wxpay: url
+					}
+				}
+			}
+			// #endif
+
+			// #ifdef MP
+			// 如果是微信小程序，则弹窗扫码支付
+			data = {
+				mode: "qrcode",
+				url,
+				alipay: url,
+				wxpay: url
+			}
+			// #endif
+
+			// #ifdef APP
+			// 如果是APP，则弹窗扫码支付
+			let alipay = `alipays://platformapi/startapp?appId=20000067&url=${url}`;
+			data = {
+				mode: "scheme",
+				url,
+				//alipay: `alipays://platformapi/startapp?appId=20000067&url=${encodeURIComponent(url)}`,
+				//alipay: `https://render.alipay.com/p/s/i?scheme=${encodeURIComponent(encodeURIComponent(alipay))}`,
+				alipay: `https://ulink.alipay.com?scheme=${encodeURIComponent(alipay)}`,
+				wxpay: `weixin://scanqrcode`
+			}
+			// #endif
+			return data;
 		},
 		// 重新支付
 		afreshPayment() {
@@ -336,65 +435,6 @@ export default {
 			this.qrcodePopup.mode = "qrcode";
 			this.qrcodePopup.type = "";
 			this.payUrl = "";
-		},
-		// 支付模式
-		getPayMode(obj){
-			let {
-				url
-			} = obj;
-			let data = {
-				mode: "qrcode", // 扫码支付
-				url
-			};
-			// #ifdef H5
-			if (["h5-weixin", "h5-alipay"].indexOf(this.h5Env) > -1) {
-				data = {
-					mode: "link",
-					url,
-					alipay: url,
-					wxpay: url
-				}
-			} else {
-				// 如果是手机，也不需要
-				if (this.h5PlatformCom !== "pc") {
-					data = {
-						mode: "scheme",
-						url: `alipays://platformapi/startapp?appId=20000067&url=${encodeURIComponent(url)}`,
-						alipay: `alipays://platformapi/startapp?appId=20000067&url=${encodeURIComponent(url)}`,
-						wxpay: url
-					}
-				} else {
-					// 如果是电脑，则弹窗扫码支付
-					data = {
-						mode: "qrcode",
-						url,
-						alipay: url,
-						wxpay: url
-					}
-				}
-			}
-			// #endif
-
-			// #ifdef MP
-			// 如果是微信小程序，则弹窗扫码支付
-			data = {
-				mode: "qrcode",
-				url,
-				alipay: url,
-				wxpay: url
-			}
-			// #endif
-
-			// #ifdef APP
-			// 如果是APP，则弹窗扫码支付
-			data = {
-				mode: "qrcode",
-				url,
-				alipay: url,
-				wxpay: url
-			}
-			// #endif
-			return data;
 		}
 	},
 	// 计算属性

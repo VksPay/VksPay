@@ -114,6 +114,7 @@ export default {
 					correctLevel: that.lv, // 容错级别
 					image: that.image, // 二维码图标
 					imageSize: that.imageSize,// 二维码图标大小
+					padding: 10,
 					cbResult: function (res) { // 生成二维码的回调
 						that._result(res);
 					},

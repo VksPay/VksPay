@@ -1095,8 +1095,9 @@ let QRCode = {};
             var ratioSize = options.size;
             var ratioImgSize = options.imageSize;
             //计算每个点的长宽
-            var tileW = (ratioSize / count).toPrecision(4);
-            var tileH = (ratioSize / count).toPrecision(4);
+						var padding = options.padding || 0; // 默认padding为10
+            var tileW = ((ratioSize - 2 * padding) / count).toPrecision(4);
+            var tileH = ((ratioSize - 2 * padding) / count).toPrecision(4);
             //绘制
             for (var row = 0; row < count; row++) {
                 for (var col = 0; col < count; col++) {
@@ -1109,7 +1110,7 @@ let QRCode = {};
                         options: options
                     });
                     ctx.setFillStyle(qrCodeAlg.modules[row][col] ? foreground : options.background);
-                    ctx.fillRect(Math.round(col * tileW), Math.round(row * tileH), w, h);
+                    ctx.fillRect(Math.round(col * tileW)+padding, Math.round(row * tileH)+padding, w, h);
                 }
             }
             if (options.image) {
@@ -1122,11 +1123,11 @@ let QRCode = {};
                     ctxi.setLineWidth(lineWidth);
                     ctxi.setFillStyle(options.background);
                     ctxi.setStrokeStyle(options.background);
-                    ctxi.beginPath(); // draw top and top right corner 
+                    ctxi.beginPath(); // draw top and top right corner
                     ctxi.moveTo(x + r, y);
-                    ctxi.arcTo(x + width, y, x + width, y + r, r); // draw right side and bottom right corner 
-                    ctxi.arcTo(x + width, y + height, x + width - r, y + height, r); // draw bottom and bottom left corner 
-                    ctxi.arcTo(x, y + height, x, y + height - r, r); // draw left and top left corner 
+                    ctxi.arcTo(x + width, y, x + width, y + r, r); // draw right side and bottom right corner
+                    ctxi.arcTo(x + width, y + height, x + width - r, y + height, r); // draw bottom and bottom left corner
+                    ctxi.arcTo(x, y + height, x, y + height - r, r); // draw left and top left corner
                     ctxi.arcTo(x, y, x + r, y, r);
                     ctxi.closePath();
                     if (fill) {
