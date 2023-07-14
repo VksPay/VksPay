@@ -225,6 +225,7 @@ export default {
 				});
 			} else {
 				// 默认均为弹窗扫码支付
+				console.log("url", payMode.url)
 				this.openQrcodePopup({
 					url:  payMode.url,
 					total_fee: total_fee
@@ -236,7 +237,6 @@ export default {
 				url: url,
 				total_fee: total_fee
 			};
-			// 其他环境则直接访问url即可支付
 		},
 		// 跳转到微信并打开扫一扫
 		toWeixinScanqrcode(){
@@ -251,7 +251,7 @@ export default {
 			this.payUrl = url;
 			if (total_fee) this.formData.total_fee = total_fee;
 		},
-		// 支付模式
+		// 识别支付模式
 		getPayMode(obj){
 			let {
 				url
@@ -271,10 +271,12 @@ export default {
 			} else {
 				// 如果是手机，也不需要
 				if (this.h5PlatformCom !== "pc") {
+					let alipayUrl = `alipays://platformapi/startapp?appId=20000067&url=${encodeURIComponent(url)}`;
 					data = {
 						mode: "scheme",
 						url,
-						alipay: `alipays://platformapi/startapp?appId=20000067&url=${encodeURIComponent(url)}`,
+					//	alipay: alipayUrl,
+						alipay: `https://ulink.alipay.com?scheme=${encodeURIComponent(alipayUrl)}`,
 						wxpay: url
 					}
 				} else {
@@ -301,13 +303,13 @@ export default {
 
 			// #ifdef APP
 			// 如果是APP，则弹窗扫码支付
-			let alipay = `alipays://platformapi/startapp?appId=20000067&url=${url}`;
+			let alipayUrl = `alipays://platformapi/startapp?appId=20000067&url=${url}`;
 			data = {
 				mode: "scheme",
 				url,
 				//alipay: `alipays://platformapi/startapp?appId=20000067&url=${encodeURIComponent(url)}`,
-				//alipay: `https://render.alipay.com/p/s/i?scheme=${encodeURIComponent(encodeURIComponent(alipay))}`,
-				alipay: `https://ulink.alipay.com?scheme=${encodeURIComponent(alipay)}`,
+				//alipay: `https://render.alipay.com/p/s/i?scheme=${encodeURIComponent(encodeURIComponent(alipayUrl))}`,
+				alipay: `https://ulink.alipay.com?scheme=${encodeURIComponent(alipayUrl)}`,
 				wxpay: `weixin://scanqrcode`
 			}
 			// #endif
