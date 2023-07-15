@@ -3,10 +3,7 @@
 const payUtil = require("./payUtil");
 
 // 配置
-const config = {
-	merchantno: "", // 你的商户号
-	key: "", // 商户号对应的key
-};
+const config = require("./config");
 
 module.exports = {
 	_before: function() {
