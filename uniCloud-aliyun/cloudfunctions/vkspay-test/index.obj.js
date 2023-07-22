@@ -63,6 +63,7 @@ module.exports = {
 			header: {
 				"content-type": "application/json; charset=utf-8",
 			},
+			timeout: 30000,
 			data: requestData
 		});
 		console.log('result: ', result);
@@ -141,6 +142,7 @@ module.exports = {
 			header: {
 				"content-type": "application/json; charset=utf-8",
 			},
+			timeout: 30000,
 			data: requestData
 		});
 		console.log('result: ', result);
@@ -208,6 +210,7 @@ module.exports = {
 			header: {
 				"content-type": "application/json; charset=utf-8",
 			},
+			timeout: 30000,
 			data: requestData
 		});
 		console.log('result: ', result);
@@ -259,6 +262,7 @@ module.exports = {
 			header: {
 				"content-type": "application/json; charset=utf-8",
 			},
+			timeout: 30000,
 			data: requestData
 		});
 		console.log('result: ', result);
@@ -313,6 +317,7 @@ module.exports = {
 			header: {
 				"content-type": "application/json; charset=utf-8",
 			},
+			timeout: 30000,
 			data: requestData
 		});
 		console.log('result: ', result);
@@ -369,6 +374,7 @@ module.exports = {
 			header: {
 				"content-type": "application/json; charset=utf-8",
 			},
+			timeout: 30000,
 			data: requestData
 		});
 		console.log('result: ', result);

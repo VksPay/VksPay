@@ -2,11 +2,10 @@
 	<view class="app">
 		<!-- 页面示例开始 -->
 		<view class="page-content">
-
 			<view class="card">
-				<view style="margin-bottom: 8px;">支付金额（单位元）：</view>
+				<view style="margin-bottom: 8px">支付金额（单位元）：</view>
 				<input class="input" type="text" v-model="formData.total_fee" placeholder="支付金额" />
-				<view style="margin-bottom: 8px;">订单号</view>
+				<view style="margin-bottom: 8px">订单号</view>
 				<input class="input" type="text" v-model="formData.out_trade_no" placeholder="订单号" />
 				<button class="button" type="primary" @click="createPayment">发起支付</button>
 				<button class="button" type="default" @click="afreshPayment" v-if="formData.out_trade_no">原订单发起支付</button>
@@ -16,9 +15,9 @@
 			<view class="hr"></view>
 
 			<view class="card">
-				<view style="margin-bottom: 8px;">退款（单位元）：</view>
+				<view style="margin-bottom: 8px">退款（单位元）：</view>
 				<input class="input" type="text" v-model="formData.refund_fee" placeholder="退款金额" />
-				<view style="margin-bottom: 8px;">退款单号</view>
+				<view style="margin-bottom: 8px">退款单号</view>
 				<input class="input" type="text" v-model="formData.out_refund_no" placeholder="退款单号" />
 				<button class="button" @click="refund">申请退款</button>
 				<button class="button" @click="queryRefund">退款结果查询</button>
@@ -27,66 +26,69 @@
 			<view class="hr"></view>
 
 			<view class="card">
-				<view style="margin-bottom: 8px;">用户付款条形码</view>
+				<view style="margin-bottom: 8px">用户付款条形码</view>
 				<input class="input" type="text" v-model="formData.auth_code" placeholder="用户付款条形码" />
 				<button class="button" type="default" @click="micropay">刷卡支付</button>
 				<button class="button" @click="queryPayment">支付结果查询</button>
 			</view>
-
 		</view>
 		<!-- 页面示例结束 -->
 
 		<!-- 弹窗开始 -->
 
 		<!-- 二维码支付弹窗开始 -->
-		<view class="pay-qrcode-popup" v-if="qrcodePopup.show">
+		<view class="pay-qrcode-popup" v-if="payPopup.show">
 			<view class="pay-qrcode-popup-mask" @click="closePopup"></view>
 			<view class="pay-qrcode-popup-content">
-				<vk-uni-qrcode ref="qrcode" :text="payUrl" :size="225" unit="px"></vk-uni-qrcode>
+				<vk-uni-qrcode ref="qrcode" :text="payPopup.qrcode" :size="225" unit="px"></vk-uni-qrcode>
 				<view class="pay-qrcode-popup-info">
 					<view>
 						<text class="pay-qrcode-popup-info-fee">{{ formData.total_fee }}</text>
 						<text>元</text>
 					</view>
-					<view style="font-size: 14px;" v-if="qrcodePopup.mode === 'qrcode'">
+					<view class="pay-qrcode-popup-tips-box" v-if="payPopup.mode === 'qrcode'">
 						<text>请用</text>
-						<text style="color: #22ac38;font-weight: bold;margin: 0 2px;font-size: 18px;">微信</text>
+						<text style="" class="pay-qrcode-popup-type-text" :class="payPopup.type">{{ typeCom }}</text>
 						<text>或</text>
-						<text style="color: #027aff;font-weight: bold;margin: 0 2px;font-size: 18px;">支付宝</text>
 						<text>扫码支付</text>
 					</view>
-					<view style="font-size: 14px;" v-else-if="qrcodePopup.mode === 'scheme'">
-						<text>请用</text>
-						<text style="color: #22ac38;font-weight: bold;margin: 0 2px;font-size: 18px;">微信</text>
-						<text>扫码支付（先截屏）</text>
-						<!-- <view>请先截屏保存二维码，再点击</view>
-						<view style="color: #22ac38;font-weight: bold;margin: 0 2px;font-size: 18px;">我已截屏现在去微信支付</view>
-						<view>按钮调起微信扫一扫，最后选择刚保存的图片进行识别二维码支付</view> -->
-					</view>
+					<template v-else-if="payPopup.mode === 'scheme'">
+						<view class="pay-qrcode-popup-tips-box" v-if="payPopup.type === 'wxpay'">
+							<text>请用</text>
+							<text class="pay-qrcode-popup-type-text" :class="payPopup.type">{{ typeCom }}</text>
+							<text>扫码支付（先截屏）</text>
+						</view>
+						<view class="pay-qrcode-popup-tips-box" v-else>
+							<view>
+								<text>请用</text>
+								<text class="pay-qrcode-popup-type-text" :class="payPopup.type">{{ typeCom }}</text>
+								<text>支付</text>
+							</view>
+							<view class="pay-qrcode-popup-type-tips">支付完成后，返回页面点【我已完成支付】</view>
+						</view>
+					</template>
 				</view>
-				<button type="primary" class="btn-success" v-if="qrcodePopup.mode === 'scheme'" style="margin-bottom: 10px;" @click="toWeixinScanqrcode">前往微信</button>
-				<button type="primary" @click="queryPayment">我已完成支付</button>
+				<button
+					type="primary"
+					:class="payPopup.type === 'wxpay' ? 'pay-qrcode-popup-btn-success' : ''"
+					v-if="payPopup.mode === 'scheme'"
+					style="margin-bottom: 10px"
+					@click="toPayByScheme(payPopup.type)"
+				>
+					前往{{ typeCom }}
+				</button>
+				<button type="primary" :class="payPopup.type === 'alipay' ? 'pay-qrcode-popup-btn-success' : ''" @click="queryPayment">我已完成支付</button>
 			</view>
 		</view>
 		<!-- 二维码支付弹窗结束 -->
-
-		<!-- 外部浏览器H5支付弹窗确认开始 -->
-		<!-- <view class="pay-confirm-popup" v-if="vkPay.confirmShow">
-			<view class="pay-confirm-popup-content">
-				<view class="pay-confirm-popup-title">请确认支付是否已完成</view>
-				<view><button type="primary" @click="queryPayment">已完成支付</button></view>
-				<view class="pay-confirm-popup-refresh"><button type="default" @click="afreshPayment">支付遇到问题，重新支付</button></view>
-				<view class="pay-confirm-popup-cancel" @click="vkPay.confirmShow = false">暂不支付</view>
-			</view>
-		</view> -->
-		<!-- 外部浏览器H5支付弹窗确认结束 -->
 
 		<!-- 弹窗结束 -->
 	</view>
 </template>
 
 <script>
-	const vkspayTest = uniCloud.importObject("vkspay-test");
+// 引入vkspay-test测试云对象
+const vkspayTest = uniCloud.importObject("vkspay-test");
 
 export default {
 	data() {
@@ -100,35 +102,33 @@ export default {
 				auth_code: "",
 				refund_fee: 0.01
 			},
-			qrcodePopup:{
-				show: false,
-				mode: "qrcode",
-				type: ""
+			// 支付弹窗
+			payPopup: {
+				show: false, // 是否打开弹窗
+				mode: "qrcode", // qrcode 二维码 scheme 跳协议头支付 link 跳链接支付
+				type: "", // wxpay 微信支付 alipay 支付宝支付
+				qrcode: "", // 二维码支付链接地址
+				alipay: "",
+				wxpay: ""
 			},
-			orders: {},
-			payUrl: "", // 支付链接地址
+			orders: {} // 订单数据缓存
 		};
 	},
 	// 监听 - 页面每次【加载时】执行(如：前进)
-	onLoad(options = {}) {
-
-	},
+	onLoad(options = {}) {},
 	// 监听 - 页面每次【显示时】执行(如：前进和返回) (页面每次出现在屏幕上都触发，包括从下级页面点返回露出当前页面)
-	onShow() {
-
-	},
+	onShow() {},
 	// 监听 - 页面每次【隐藏时】执行(如：返回)
-	onHide() {
-
-	},
+	onHide() {},
 	// 函数
 	methods: {
-		// 发起支付
-		createPayment(obj = {}) {
-			vkspayTest.webpay({
-				total_fee: this.formData.total_fee
-			}).then((res)=>{
-				console.log('webpay-res: ', res)
+		// 创建支付订单
+		async createPayment(obj = {}) {
+			try {
+				let res = await vkspayTest.webpay({
+					total_fee: this.formData.total_fee
+				});
+				console.log("webpay-res: ", res);
 				if (res.return_code === "SUCCESS") {
 					// 请求成功
 					let out_trade_no = res.data.out_trade_no; // 订单号
@@ -145,41 +145,40 @@ export default {
 						icon: "none"
 					});
 				}
-			}).catch((err)=>{
+			} catch (err) {
 				// 请求异常
 				uni.showToast({
 					title: err.message || "请求异常",
 					icon: "none"
 				});
-			});
+			}
 		},
-		callPayment(order={}){
-			let {
-				out_trade_no,
-				url,
-				total_fee
-			} = order;
+		// 发起支付
+		callPayment(order = {}) {
+			let { out_trade_no, url, total_fee } = order;
 			this.formData.out_trade_no = out_trade_no;
-			this.formData.refund_fee = total_fee; // 方便演示一键全额退款
 			this.formData.total_fee = total_fee;
+			this.formData.refund_fee = total_fee; // 方便演示一键全额退款
 			// 如果是PC浏览器、小程序、app，则需要弹出二维码
-			let payMode = this.getPayMode({ url });
-			if (payMode.mode === "link") {
+			let payInfo = this.getPayInfo(url);
+			this.payPopup.wxpay = payInfo.wxpay;
+			this.payPopup.alipay = payInfo.alipay;
+			if (payInfo.mode === "link") {
 				// 跳转url链接支付
-				window.location.href = payMode.url;
-			} else if (payMode.mode === "scheme") {
+				window.location.href = payInfo.url;
+			} else if (payInfo.mode === "scheme") {
 				// 跳转scheme协议支付
-				let itemList = ["支付宝","微信支付"];
+				let itemList = ["支付宝", "微信支付"];
 				uni.showActionSheet({
-					itemList:itemList,
-					success: (e) => {
+					itemList: itemList,
+					success: e => {
 						let item = itemList[e.tapIndex];
 						if (item === "微信支付") {
 							// 如果是微信支付，需要弹窗二维码，让用户保存图片，再自动打开微信调用扫一扫，选择刚保存的图片
 							// #ifdef APP
 							// APP可以先帮用户截屏
-							this.openQrcodePopup({
-								url:  payMode.url,
+							this.openPopup({
+								qrcode: payInfo.qrcode,
 								total_fee: total_fee,
 								mode: "scheme",
 								type: "wxpay"
@@ -189,46 +188,50 @@ export default {
 								uni.saveImageToPhotosAlbum({
 									filePath: base64,
 									success: () => {
-										uni.showToast({
-											title: "支付二维码已保存到您的相册",
-											icon: "none"
-										});
-									},
-									complete: () => {
-										// 不管成功失败都跳微信APP
-										setTimeout(() => {
-											plus.runtime.openURL(payMode.wxpay);
-										}, 500);
+										uni.showModal({
+											title: "提示",
+											content: "支付二维码已自动保存到您的相册，请打开微信扫一扫，从相册选择最新保存的支付二维码进行支付",
+											showCancel: false,
+											confirmText: "打开微信扫一扫",
+											success: () => {
+												plus.runtime.openURL(payInfo.wxpay);
+											}
+										})
 									}
 								});
 							}, 1000);
 							// #endif
 
 							// #ifndef APP
-							this.openQrcodePopup({
-								url:  payMode.wxpay,
+							this.openPopup({
+								qrcode: payInfo.qrcode,
 								total_fee: total_fee,
 								mode: "scheme",
 								type: "wxpay"
 							});
 							// #endif
 						} else {
+							this.openPopup({
+								qrcode: payInfo.qrcode,
+								total_fee: total_fee,
+								mode: "scheme",
+								type: "alipay"
+							});
 							// #ifdef APP
-							plus.runtime.openURL(payMode.alipay);
-							//window.open(payMode.alipay);
+							plus.runtime.openURL(payInfo.alipay);
 							// #endif
 							// #ifndef APP
-							window.location.href = payMode.alipay;
+							window.location.href = payInfo.alipay;
 							// #endif
 						}
 					}
 				});
 			} else {
 				// 默认均为弹窗扫码支付
-				console.log("url", payMode.url)
-				this.openQrcodePopup({
-					url:  payMode.url,
-					total_fee: total_fee
+				this.openPopup({
+					qrcode: payInfo.qrcode,
+					total_fee: total_fee,
+					mode: "qrcode"
 				});
 			}
 			// 临时存储订单号和支付链接地址的关系
@@ -238,55 +241,67 @@ export default {
 				total_fee: total_fee
 			};
 		},
-		// 跳转到微信并打开扫一扫
-		toWeixinScanqrcode(){
-			window.location.href = "weixin://scanqrcode";
+		// 根据scheme调起支付
+		toPayByScheme(type) {
+			let { payPopup } = this;
+			if (type === "wxpay") {
+				window.location.href = payPopup.wxpay;
+			} else {
+				window.location.href = payPopup.alipay;
+			}
 		},
 		// 打开二维码支付弹窗
-		openQrcodePopup(obj={}){
-			let { url, total_fee, mode, type } = obj;
-			this.qrcodePopup.show = true;
-			this.qrcodePopup.mode = mode;
-			this.qrcodePopup.type = type;
-			this.payUrl = url;
+		openPopup(obj = {}) {
+			let { qrcode, total_fee, mode, type } = obj;
+			this.payPopup.show = true;
+			this.payPopup.mode = mode;
+			this.payPopup.type = type;
+			this.payPopup.qrcode = qrcode;
 			if (total_fee) this.formData.total_fee = total_fee;
 		},
-		// 识别支付模式
-		getPayMode(obj){
-			let {
-				url
-			} = obj;
+		// 关闭弹窗
+		closePopup() {
+			this.payPopup.show = false;
+			// 重置数据
+			this.payPopup.mode = "qrcode";
+			this.payPopup.type = "";
+			this.payPopup.qrcode = "";
+		},
+		// 获取支付信息，识别支付模式
+		getPayInfo(url) {
 			let data = {
 				mode: "qrcode", // 扫码支付
-				url
+				qrcode: url
 			};
 			// #ifdef H5
 			if (["h5-weixin", "h5-alipay"].indexOf(this.h5Env) > -1) {
 				data = {
 					mode: "link",
-					url,
+					qrcode: url,
 					alipay: url,
 					wxpay: url
-				}
+				};
 			} else {
 				// 如果是手机，也不需要
 				if (this.h5PlatformCom !== "pc") {
-					let alipayUrl = `alipays://platformapi/startapp?appId=20000067&url=${encodeURIComponent(url)}`;
+					//let alipayUrl = `alipays://platformapi/startapp?appId=20000067&url=${encodeURIComponent(url)}`;
+					//let alipayUrl = `alipays://platformapi/startapp?saId=10000007&qrcode=${encodeURIComponent(url)}?_s=web-other`;
+					let alipayUrl = `alipays://platformapi/startapp?saId=10000007&qrcode=${url}`;
 					data = {
 						mode: "scheme",
-						url,
-					//	alipay: alipayUrl,
-						alipay: `https://ulink.alipay.com?scheme=${encodeURIComponent(alipayUrl)}`,
-						wxpay: url
-					}
+						qrcode: url,
+						alipay: alipayUrl,
+						//alipay: `https://ulink.alipay.com?scheme=${encodeURIComponent(alipayUrl)}`,
+						wxpay: `weixin://scanqrcode`
+					};
 				} else {
 					// 如果是电脑，则弹窗扫码支付
 					data = {
 						mode: "qrcode",
-						url,
+						qrcode: url,
 						alipay: url,
 						wxpay: url
-					}
+					};
 				}
 			}
 			// #endif
@@ -295,54 +310,56 @@ export default {
 			// 如果是微信小程序，则弹窗扫码支付
 			data = {
 				mode: "qrcode",
-				url,
+				qrcode: url,
 				alipay: url,
 				wxpay: url
-			}
+			};
 			// #endif
 
 			// #ifdef APP
 			// 如果是APP，则弹窗扫码支付
-			let alipayUrl = `alipays://platformapi/startapp?appId=20000067&url=${url}`;
+			//let alipayUrl = `alipays://platformapi/startapp?appId=20000067&url=${encodeURIComponent(url)}`;
+			let alipayUrl = `alipays://platformapi/startapp?saId=10000007&qrcode=${url}`;
 			data = {
 				mode: "scheme",
-				url,
-				//alipay: `alipays://platformapi/startapp?appId=20000067&url=${encodeURIComponent(url)}`,
-				//alipay: `https://render.alipay.com/p/s/i?scheme=${encodeURIComponent(encodeURIComponent(alipayUrl))}`,
+				qrcode: url,
+				//alipay: alipayUrl,
+				//alipay: `https://render.alipay.com/p/s/i?scheme=${encodeURIComponent(alipayUrl)}`,
 				alipay: `https://ulink.alipay.com?scheme=${encodeURIComponent(alipayUrl)}`,
 				wxpay: `weixin://scanqrcode`
-			}
+			};
 			// #endif
 			return data;
 		},
 		// 重新支付
-		afreshPayment() {
+		async afreshPayment() {
 			// 重新唤起支付前先查询下订单是否已支付
-			vkspayTest.orderquery({
+			let res = await vkspayTest.orderquery({
 				out_trade_no: this.formData.out_trade_no
-			}).then((res)=>{
-				if (res.return_code !== "SUCCESS") {
-					let order = this.orders[this.formData.out_trade_no];
-					if (order && order.url) {
-						this.callPayment(order);
-					}
-				} else {
-					// 支付成功
-					this.closePopup();
-					uni.showToast({
-						title: "支付成功",
-						icon: "success"
-					});
-				}
 			});
+			if (res.return_code !== "SUCCESS") {
+				let order = this.orders[this.formData.out_trade_no];
+				if (order && order.url) {
+					this.callPayment(order);
+				}
+			} else {
+				// 支付成功
+				this.closePopup();
+				uni.showToast({
+					title: "支付成功",
+					icon: "success"
+				});
+			}
 		},
 		// 刷卡支付
-		micropay(){
-			vkspayTest.micropay({
-				auth_code: this.formData.auth_code,
-				total_fee: this.formData.total_fee
-			}).then((res)=>{
-				console.log('micropay-res: ', res)
+		async micropay() {
+			try {
+				let res = await vkspayTest.micropay({
+					auth_code: this.formData.auth_code,
+					total_fee: this.formData.total_fee
+				});
+
+				console.log("micropay-res: ", res);
 				if (res.return_code === "SUCCESS") {
 					// 请求成功
 					uni.showToast({
@@ -356,108 +373,98 @@ export default {
 						icon: "none"
 					});
 				}
-			}).catch((err)=>{
+			} catch (err) {
 				// 请求异常
 				uni.showToast({
 					title: err.message || "请求异常",
 					icon: "none"
 				});
-			});
+			}
 		},
 		// 支付状态查询
-		queryPayment() {
-			vkspayTest.orderquery({
+		async queryPayment() {
+			let res = await vkspayTest.orderquery({
 				out_trade_no: this.formData.out_trade_no
-			}).then((res)=>{
-				console.log('orderquery-res: ', res)
-				if (res.return_code !== "SUCCESS") {
-					// 未支付
-					uni.showToast({
-						title: res.return_msg || res.msg,
-						icon: "none"
-					});
-				} else {
-					// 支付成功
-					this.closePopup();
-					uni.showToast({
-						title: "支付成功",
-						icon: "success"
-					});
-				}
 			});
+			console.log("orderquery-res: ", res);
+			if (res.return_code !== "SUCCESS") {
+				// 未支付
+				uni.showToast({
+					title: res.return_msg || res.msg,
+					icon: "none"
+				});
+			} else {
+				// 支付成功
+				this.closePopup();
+				uni.showToast({
+					title: "支付成功",
+					icon: "success"
+				});
+			}
 		},
 		// 退款，此为演示，实际业务开发不应该写在前端，而是写在云函数中。
-		refund() {
-			vkspayTest.orderrefund({
+		async refund() {
+			let res = await vkspayTest.orderrefund({
 				out_trade_no: this.formData.out_trade_no,
-				refund_fee: this.formData.refund_fee,
-			}).then((res)=>{
-				console.log('orderrefund-res: ', res)
-				if (res.return_code !== "SUCCESS") {
-					// 退款失败
-					uni.showToast({
-						title: res.return_msg || res.msg,
-						icon: "none"
-					});
-				} else {
-					this.formData.out_refund_no = res.out_refund_no;
-					// 退款成功
-					uni.showToast({
-						title: "退款成功",
-						icon: "success"
-					});
-				}
+				refund_fee: this.formData.refund_fee
 			});
+			console.log("orderrefund-res: ", res);
+			if (res.return_code !== "SUCCESS") {
+				// 退款失败
+				uni.showToast({
+					title: res.return_msg || res.msg,
+					icon: "none"
+				});
+			} else {
+				this.formData.out_refund_no = res.out_refund_no;
+				// 退款成功
+				uni.showToast({
+					title: "退款成功",
+					icon: "success"
+				});
+			}
 		},
 		// 退款查询
-		queryRefund() {
-			vkspayTest.orderrefundquery({
+		async queryRefund() {
+			let res = await vkspayTest.orderrefundquery({
 				out_trade_no: this.formData.out_trade_no,
 				out_refund_no: this.formData.out_refund_no
-			}).then((res)=>{
-				console.log('orderrefundquery-res: ', res)
-				if (res.return_code !== "SUCCESS") {
-					// 退款失败
-					uni.showToast({
-						title: res.return_msg || res.msg,
-						icon: "none"
-					});
-				} else {
-					// 退款成功
-					uni.showToast({
-						title: "退款成功",
-						icon: "success"
-					});
-				}
 			});
-		},
-		// 关闭弹窗
-		closePopup() {
-			this.qrcodePopup.show = false;
-			this.qrcodePopup.mode = "qrcode";
-			this.qrcodePopup.type = "";
-			this.payUrl = "";
+			console.log("orderrefundquery-res: ", res);
+			if (res.return_code !== "SUCCESS") {
+				// 退款失败
+				uni.showToast({
+					title: res.return_msg || res.msg,
+					icon: "none"
+				});
+			} else {
+				// 退款成功
+				uni.showToast({
+					title: "退款成功",
+					icon: "success"
+				});
+			}
 		}
 	},
 	// 计算属性
 	computed: {
 		// h5运行环境
-		h5Env(){
+		h5Env() {
 			// #ifdef H5
 			let ua = window.navigator.userAgent.toLowerCase();
-			if (ua.match(/MicroMessenger/i) == 'micromessenger' && (ua.match(/miniprogram/i) == 'miniprogram')) {
+			if (ua.match(/MicroMessenger/i) == "micromessenger" && ua.match(/miniprogram/i) == "miniprogram") {
 				// 微信小程序
 				return "mp-weixin";
 			}
-			if (ua.match(/MicroMessenger/i) == 'micromessenger') {
+			if (ua.match(/MicroMessenger/i) == "micromessenger") {
 				// 微信公众号
 				return "h5-weixin";
 			}
-			if (ua.match(/alipay/i) == 'alipay' && ua.match(/miniprogram/i) == 'miniprogram') {
+			if (ua.match(/alipay/i) == "alipay" && ua.match(/miniprogram/i) == "miniprogram") {
 				// 支付宝小程序
 				return "mp-alipay";
 			}
-			if (ua.match(/alipay/i) == 'alipay') {
+			if (ua.match(/alipay/i) == "alipay") {
 				// 支付宝内
 				return "h5-alipay";
 			}
@@ -465,7 +472,8 @@ export default {
 			return "h5";
 			// #endif
 		},
-		h5PlatformCom(){
+		// h5运行平台
+		h5PlatformCom() {
 			// #ifdef H5
 			let system = {
 				win: false,
@@ -493,17 +501,27 @@ export default {
 			}
 			// #endif
 		},
+		// 当前支付方式中文表示
+		typeCom() {
+			let { payPopup = {} } = this;
+			let type = payPopup.type;
+			let typeObj = {
+				wxpay: "微信支付",
+				alipay: "支付宝"
+			};
+			return typeObj[type];
+		}
 	}
 };
 </script>
 <style lang="scss" scoped>
 /* 示例页面样式开始 */
-.card{
+.card {
 	padding: 15px;
 }
-.hr{
+.hr {
 	height: 10px;
-	background-color: #cecece;;
+	background-color: #cecece;
 	width: calc(100%);
 	margin: 30px 0;
 	box-sizing: border-box;
@@ -523,41 +541,7 @@ export default {
 		margin-bottom: 15px;
 	}
 }
-.btn-success{
-	background-color: #22ac38;
-	color: #fff;
-}
 /* 示例页面样式结束 */
-
-/* 外部浏览器H5支付弹窗确认开始 */
-.pay-confirm-popup {
-	position: fixed;
-	z-index: 2;
-	width: 100vw;
-	top: 0;
-	bottom: 0;
-	background-color: rgba(0, 0, 0, 0.6);
-	.pay-confirm-popup-content {
-		width: 275px;
-		margin: 50% auto 0 auto;
-		background-color: #ffffff;
-		border-radius: 5px;
-		padding: 20px;
-		.pay-confirm-popup-title {
-			text-align: center;
-			padding: 10px 0;
-			margin-bottom: 15px;
-		}
-		.pay-confirm-popup-refresh{
-			margin-top: 10px;
-		}
-		.pay-confirm-popup-cancel{
-			margin-top: 10px;
-			text-align: center;
-		}
-	}
-}
-/* 外部浏览器H5支付弹窗确认结束 */
 
 /* 二维码支付弹窗开始 */
 .pay-qrcode-popup {
@@ -583,19 +567,40 @@ export default {
 		padding: 20px;
 		box-sizing: content-box;
 		text-align: center;
-		.pay-qrcode-popup-info{
+		.pay-qrcode-popup-info {
 			text-align: center;
 			padding: 10px;
-			.pay-qrcode-popup-info-fee{
+			.pay-qrcode-popup-info-fee {
 				color: red;
 				font-size: 30px;
 				font-weight: bold;
 			}
+			.pay-qrcode-popup-tips-box {
+				font-size: 14px;
+				.pay-qrcode-popup-type-text {
+					font-weight: bold;
+					margin: 0 2px;
+					font-size: 18px;
+					&.wxpay {
+						color: #22ac38;
+					}
+					&.alipay {
+						color: #027aff;
+					}
+				}
+				.pay-qrcode-popup-type-tips {
+					font-size: 12px;
+				}
+			}
 		}
-		.pay-qrcode-popup-image{
+		.pay-qrcode-popup-image {
 			width: 225px;
 			height: 225px;
 		}
+	}
+	.pay-qrcode-popup-btn-success {
+		background-color: #22ac38;
+		color: #fff;
 	}
 }
 /* 二维码支付弹窗结束 */
