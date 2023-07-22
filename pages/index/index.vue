@@ -116,13 +116,20 @@ export default {
 	},
 	// 监听 - 页面每次【加载时】执行(如：前进)
 	onLoad(options = {}) {
-		if (options.return) {
-			this.formData.out_trade_no = options.out_trade_no;
+		if (options.return && options.out_trade_no) {
+			if (options.out_trade_no.indexOf(",") > -1) {
+				let arr = options.out_trade_no.split(",");
+				this.formData.out_trade_no = arr[arr.length-1];
+			} else {
+				this.formData.out_trade_no = options.out_trade_no;
+			}
 			this.queryPayment();
 		}
 	},
 	// 监听 - 页面每次【显示时】执行(如：前进和返回) (页面每次出现在屏幕上都触发，包括从下级页面点返回露出当前页面)
-	onShow() {},
+	onShow() {
+
+	},
 	// 监听 - 页面每次【隐藏时】执行(如：返回)
 	onHide() {},
 	// 函数
@@ -171,12 +178,28 @@ export default {
 			if (payInfo.mode === "link") {
 				// 跳转url链接支付
 				// 记录当前页面数据，因为支付完会强制关闭页面，因此下次进入任意页面后，应该在App.vue的onLaunch里再跳回来
-				let returnUrl = window.location.href;
+				let nowUrl = window.location.href;
 				// 在当前url上带上参数，代表是同步跳转过来的
-				returnUrl += returnUrl.indexOf("&") >- 1 ? "&" : "?";
-				returnUrl += `return=1&out_trade_no=${out_trade_no}`;
+				let returnUrl = this.addOrUpdateURLParameter(nowUrl, {
+					return:1,
+					out_trade_no: out_trade_no
+				});
 				uni.setStorageSync("VksPay.returnUrl", returnUrl);
-				window.location.href = payInfo.qrcode;
+				uni.showModal({
+					title: "提示",
+					content: `支付结果查询链接已复制到您的剪切板，待支付完成后，您可以通过向文件助手粘贴链接或点击本站任意链接均可即可查看支付结果`,
+					showCancel: false,
+					confirmText: "去支付",
+					success: () => {
+						// 同时也将结果链接存进剪切板，方便复制粘贴再次进去
+						// h5中setClipboardData必须在用户点击事件中触发，故写在uni.showModal的点击回调中执行
+						uni.setClipboardData({
+							data: returnUrl,
+							showToast: false
+						});
+						window.location.href = payInfo.qrcode;
+					}
+				});
 			} else if (payInfo.mode === "scheme") {
 				// 跳转scheme协议支付
 				let itemList = ["支付宝", "微信支付"];
@@ -342,6 +365,22 @@ export default {
 			// #endif
 			return data;
 		},
+		// #ifdef H5
+		addOrUpdateURLParameter(url, paramsObj) {
+			const urlObject = new URL(url);
+			const searchParams = urlObject.searchParams;
+
+			for (const key in paramsObj) {
+				if (paramsObj.hasOwnProperty(key)) {
+					const value = paramsObj[key];
+					searchParams.set(key, value);
+				}
+			}
+
+			urlObject.search = searchParams.toString();
+			return urlObject.toString();
+		},
+		// #endif
 		// 重新支付
 		async afreshPayment() {
 			// 重新唤起支付前先查询下订单是否已支付
