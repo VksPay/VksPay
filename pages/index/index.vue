@@ -165,7 +165,7 @@ export default {
 			this.payPopup.alipay = payInfo.alipay;
 			if (payInfo.mode === "link") {
 				// 跳转url链接支付
-				window.location.href = payInfo.url;
+				window.location.href = payInfo.qrcode;
 			} else if (payInfo.mode === "scheme") {
 				// 跳转scheme协议支付
 				let itemList = ["支付宝", "微信支付"];
