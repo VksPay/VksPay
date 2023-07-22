@@ -593,8 +593,24 @@ export default {
 </script>
 <style lang="scss" scoped>
 /* 示例页面样式开始 */
-page{
+page,
+.app{
 	background-color: #f8f8f8;
+}
+.page-content {
+	padding: 1px 0;
+	.input {
+		width: 100%;
+		height: 46px;
+		border: solid 1px #dddddd;
+		border-radius: 5px;
+		margin-bottom: 15px;
+		padding: 0px 15px;
+		box-sizing: border-box;
+	}
+	.button {
+		margin-bottom: 15px;
+	}
 }
 .card {
 	margin: 10px;
@@ -609,21 +625,6 @@ page{
 	}
 	.content{
 		padding: 15px;
-	}
-}
-
-.page-content {
-	.input {
-		width: 100%;
-		height: 46px;
-		border: solid 1px #dddddd;
-		border-radius: 5px;
-		margin-bottom: 15px;
-		padding: 0px 15px;
-		box-sizing: border-box;
-	}
-	.button {
-		margin-bottom: 15px;
 	}
 }
 /* 示例页面样式结束 */
