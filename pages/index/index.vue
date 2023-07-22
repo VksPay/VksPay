@@ -9,7 +9,7 @@
 				<input class="input" type="text" v-model="formData.out_trade_no" placeholder="订单号" />
 				<button class="button" type="primary" @click="createPayment">发起支付</button>
 				<button class="button" type="default" @click="afreshPayment" v-if="formData.out_trade_no">原订单发起支付</button>
-				<button class="button" @click="queryPayment">支付结果查询</button>
+				<button class="button" type="default" @click="queryPayment">支付结果查询</button>
 			</view>
 
 			<view class="hr"></view>
@@ -19,8 +19,8 @@
 				<input class="input" type="text" v-model="formData.refund_fee" placeholder="退款金额" />
 				<view style="margin-bottom: 8px">退款单号</view>
 				<input class="input" type="text" v-model="formData.out_refund_no" placeholder="退款单号" />
-				<button class="button" @click="refund">申请退款</button>
-				<button class="button" @click="queryRefund">退款结果查询</button>
+				<button class="button" type="warn" @click="refund">申请退款</button>
+				<button class="button" type="default" @click="queryRefund">退款结果查询</button>
 			</view>
 
 			<view class="hr"></view>
@@ -28,8 +28,8 @@
 			<view class="card">
 				<view style="margin-bottom: 8px">用户付款条形码</view>
 				<input class="input" type="text" v-model="formData.auth_code" placeholder="用户付款条形码" />
-				<button class="button" type="default" @click="micropay">刷卡支付</button>
-				<button class="button" @click="queryPayment">支付结果查询</button>
+				<button class="button" type="primary" @click="micropay">刷卡支付</button>
+				<button class="button" type="default" @click="queryPayment">支付结果查询</button>
 			</view>
 		</view>
 		<!-- 页面示例结束 -->
@@ -107,8 +107,8 @@ export default {
 				mode: "qrcode", // qrcode 二维码 scheme 跳协议头支付 link 跳链接支付
 				type: "", // wxpay 微信支付 alipay 支付宝支付
 				qrcode: "", // 二维码支付链接地址
-				alipay: "",
-				wxpay: ""
+				alipay: "", // 支付宝支付链接
+				wxpay: "", // 微信支付链接
 			},
 			orders: {} // 订单数据缓存
 		};
