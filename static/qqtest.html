@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>QQ跳支付宝测试</title>
+		<script src="https://open.mobile.qq.com/sdk/qqapi.js"></script>
+		<style>
+			body {
+				font-family: Arial, sans-serif;
+				text-align: center;
+				margin: 50px auto;
+				max-width: 300px;
+			}
+
+			h1 {
+				margin-bottom: 20px;
+			}
+
+			button {
+				display: block;
+				width: 100%;
+				padding: 10px;
+				margin-bottom: 10px;
+				border: none;
+				border-radius: 5px;
+				background-color: #007BFF;
+				color: #fff;
+				font-size: 16px;
+				cursor: pointer;
+			}
+			.green{
+				background-color: #28A745;
+			}
+			button:active {
+				opacity: 0.7;
+			}
+		</style>
+		<script>
+			function topicSend() {
+				if (mqq.support("mqq.ui.topicSend")) {
+					alert("您的设备支持QQ API！");
+				} else {
+					alert("您的设备不支持QQ API。");
+				}
+			}
+
+			function openUrl() {
+				mqq.invoke("ui", "openUrl", {
+					url: "http://news.qq.com",
+					target: 2,
+					style: 0
+				});
+			}
+		</script>
+	</head>
+
+	<body>
+		<h1>QQ跳浏览器测试</h1>
+		<button onclick="topicSend()">检测是否支持QQ API</button>
+		<button onclick="openUrl()" class="green">跳转至外部浏览器</button>
+	</body>
+
+</html>
