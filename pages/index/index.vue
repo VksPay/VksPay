@@ -116,13 +116,10 @@ export default {
 	},
 	// 监听 - 页面每次【加载时】执行(如：前进)
 	onLoad(options = {}) {
-		if (options.return && options.out_trade_no) {
-			if (options.out_trade_no.indexOf(",") > -1) {
-				let arr = options.out_trade_no.split(",");
-				this.formData.out_trade_no = arr[arr.length - 1];
-			} else {
-				this.formData.out_trade_no = options.out_trade_no;
-			}
+		if (options.out_trade_no) {
+			this.formData.out_trade_no = options.out_trade_no;
+		}
+		if (options.return) {
 			this.queryPayment();
 		}
 	},
