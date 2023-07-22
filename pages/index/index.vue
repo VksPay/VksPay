@@ -51,24 +51,29 @@
 						<text class="pay-qrcode-popup-info-fee">{{ formData.total_fee }}</text>
 						<text>元</text>
 					</view>
-					<view class="pay-qrcode-popup-tips-box" v-if="payPopup.mode === 'qrcode'">
-						<text>请用</text>
-						<text style="" class="pay-qrcode-popup-type-text" :class="payPopup.type">{{ typeCom }}</text>
-						<text>或</text>
-						<text>扫码支付</text>
-					</view>
-					<template v-else-if="payPopup.mode === 'scheme'">
-						<view class="pay-qrcode-popup-tips-box" v-if="payPopup.type === 'wxpay'">
+					<template v-if="!typeCom">
+						<view class="pay-qrcode-popup-tips-box">
 							<text>请用</text>
-							<text class="pay-qrcode-popup-type-text" :class="payPopup.type">{{ typeCom }}</text>
-							<text>扫码支付（先截屏）</text>
+							<text class="pay-qrcode-popup-type-text wxpay">微信</text>
+							<text>或</text>
+							<text class="pay-qrcode-popup-type-text alipay">支付宝</text>
+							<text>扫码支付</text>
 						</view>
-						<view class="pay-qrcode-popup-tips-box" v-else>
-							<view>
-								<text>请用</text>
-								<text class="pay-qrcode-popup-type-text" :class="payPopup.type">{{ typeCom }}</text>
-								<text>支付</text>
-							</view>
+					</template>
+					<template v-else-if="payPopup.type === 'wxpay'">
+						<view class="pay-qrcode-popup-tips-box">
+							<text>请用</text>
+							<text class="pay-qrcode-popup-type-text wxpay">微信</text>
+							<text>扫码支付</text>
+							<text v-if="payPopup.mode === 'scheme'">（先截屏）</text>
+							<view class="pay-qrcode-popup-type-tips">支付完成后，返回页面点【我已完成支付】</view>
+						</view>
+					</template>
+					<template v-else-if="payPopup.type === 'alipay'">
+						<view class="pay-qrcode-popup-tips-box">
+							<text>请用</text>
+							<text class="pay-qrcode-popup-type-text alipay">支付宝</text>
+							<text>支付</text>
 							<view class="pay-qrcode-popup-type-tips">支付完成后，返回页面点【我已完成支付】</view>
 						</view>
 					</template>
@@ -252,8 +257,8 @@ export default {
 							// #ifdef APP
 							plus.runtime.openURL(payInfo.alipay);
 							// #endif
+
 							// #ifndef APP
-							window.location.href = payInfo.alipay;
 							window.location.href = payInfo.alipay;
 							// #endif
 						}
@@ -266,6 +271,22 @@ export default {
 					total_fee: total_fee,
 					mode: "qrcode"
 				});
+				// #ifdef MP
+				setTimeout(() => {
+					let base64 = this.$refs.qrcode.getBase64();
+					uni.saveImageToPhotosAlbum({
+						filePath: base64,
+						success: () => {
+							uni.showModal({
+								title: "提示",
+								content: "支付二维码已保存到您的相册，请打开wx或zfb扫一扫，从相册选择最新保存的支付二维码进行支付",
+								showCancel: false,
+								confirmText: "我知道了"
+							});
+						}
+					});
+				}, 1000);
+				// #endif
 			}
 			// 临时存储订单号和支付链接地址的关系
 			this.orders[out_trade_no] = {
@@ -289,6 +310,12 @@ export default {
 			this.payPopup.show = true;
 			this.payPopup.mode = mode;
 			this.payPopup.type = type;
+			// #ifdef MP-WEIXIN
+			this.payPopup.type = "wxpay";
+			// #endif
+			// #ifdef MP-ALIPAY
+			this.payPopup.type = "alipay";
+			// #endif
 			this.payPopup.qrcode = qrcode;
 			if (total_fee) this.formData.total_fee = total_fee;
 		},

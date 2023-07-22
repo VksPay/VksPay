@@ -5,6 +5,10 @@ const payUtil = require("./payUtil");
 // 配置
 const config = require("./config");
 
+const db = uniCloud.database();
+const _ = db.command;
+const $ = _.aggregate;
+
 module.exports = {
 	_before: function() {
 		if (!config.merchantno || !config.key) {
@@ -68,9 +72,9 @@ module.exports = {
 		});
 		console.log('result: ', result);
 		if (result.return_code !== "SUCCESS") {
-			console.log("------检测到异步回调疑似伪造------")
-			console.log("------检测到异步回调疑似伪造------")
-			console.log("------检测到异步回调疑似伪造------")
+			console.log("------检测到异步回调疑似伪造，已拦截------");
+			console.log("------检测到异步回调疑似伪造，已拦截------");
+			console.log("------检测到异步回调疑似伪造，已拦截------");
 			// 未支付
 			// 不管未支付还是已支付，均返回 { code: "SUCCESS", msg: "SUCCESS" }
 			return {
@@ -79,18 +83,37 @@ module.exports = {
 			}
 		}
 
-		// 已支付，执行自己的逻辑
-		console.log("------已支付，执行自己的逻辑------");
+		// 注意：异步回调有可能会1秒内连续回调两次，故需要自己做好防重判断，即同一个订单号只处理一次
+		// 防重示例，记录全部的通知信息，方便模拟重试通知
+		try {
+			let setRes = await db.collection("vkspay-notice").doc(out_trade_no).set({
+				httpInfo,
+				notice_time: Date.now()
+			});
+			if (setRes.updated > 0) {
+				// 代表是重复通知，直接拒绝
+				console.log("------检测到重复通知，已拦截------");
+				console.log("------检测到重复通知，已拦截------");
+				console.log("------检测到重复通知，已拦截------");
+				return {
+					code: "SUCCESS",
+					msg: "SUCCESS"
+				}
+			}
 
-		// 自己的业务逻辑开始-----------------------------------------------------------
-		console.log("------自己的业务逻辑开始------");
+			// 已支付，执行自己的逻辑
+			console.log("------已支付，执行自己的逻辑------");
+
+			// 自己的业务逻辑开始-----------------------------------------------------------
+			console.log("------自己的业务逻辑开始------");
 
 
 
-
-
-		console.log("------自己的业务逻辑结束------");
-		// 自己的业务逻辑结束-----------------------------------------------------------
+			console.log("------自己的业务逻辑结束------");
+			// 自己的业务逻辑结束-----------------------------------------------------------
+		} catch (err) {
+			console.error('err: ', err)
+		}
 
 		return {
 			code: "SUCCESS",

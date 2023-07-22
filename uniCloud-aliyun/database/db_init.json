@@ -1,0 +1,11 @@
+
+{	"vkspay-notice": {
+		"data": [],
+		"index": [
+			{
+				"IndexName": "notice_time",
+				"MgoKeySchema": {"MgoIndexKeys": [{"Name": "notice_time","Direction": "1"}],"MgoIsUnique": false}
+			}
+		]
+	}
+}
