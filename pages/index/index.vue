@@ -119,7 +119,7 @@ export default {
 		if (options.return && options.out_trade_no) {
 			if (options.out_trade_no.indexOf(",") > -1) {
 				let arr = options.out_trade_no.split(",");
-				this.formData.out_trade_no = arr[arr.length-1];
+				this.formData.out_trade_no = arr[arr.length - 1];
 			} else {
 				this.formData.out_trade_no = options.out_trade_no;
 			}
@@ -127,9 +127,7 @@ export default {
 		}
 	},
 	// 监听 - 页面每次【显示时】执行(如：前进和返回) (页面每次出现在屏幕上都触发，包括从下级页面点返回露出当前页面)
-	onShow() {
-
-	},
+	onShow() {},
 	// 监听 - 页面每次【隐藏时】执行(如：返回)
 	onHide() {},
 	// 函数
@@ -181,7 +179,7 @@ export default {
 				let nowUrl = window.location.href;
 				// 在当前url上带上参数，代表是同步跳转过来的
 				let returnUrl = this.addOrUpdateURLParameter(nowUrl, {
-					return:1,
+					return: 1,
 					out_trade_no: out_trade_no
 				});
 				uni.setStorageSync("VksPay.returnUrl", returnUrl);
@@ -230,7 +228,7 @@ export default {
 											success: () => {
 												plus.runtime.openURL(payInfo.wxpay);
 											}
-										})
+										});
 									}
 								});
 							}, 1000);
@@ -398,7 +396,7 @@ export default {
 						showCancel: true,
 						confirmText: "重新支付",
 						cancelText: "取消",
-						success: (res) => {
+						success: res => {
 							if (res.confirm) {
 								this.createPayment();
 							}
