@@ -115,7 +115,12 @@ export default {
 		};
 	},
 	// 监听 - 页面每次【加载时】执行(如：前进)
-	onLoad(options = {}) {},
+	onLoad(options = {}) {
+		if (options.return) {
+			this.formData.out_trade_no = options.out_trade_no;
+			this.queryPayment();
+		}
+	},
 	// 监听 - 页面每次【显示时】执行(如：前进和返回) (页面每次出现在屏幕上都触发，包括从下级页面点返回露出当前页面)
 	onShow() {},
 	// 监听 - 页面每次【隐藏时】执行(如：返回)
@@ -123,7 +128,7 @@ export default {
 	// 函数
 	methods: {
 		// 创建支付订单
-		async createPayment(obj = {}) {
+		async createPayment() {
 			try {
 				let res = await vkspayTest.webpay({
 					total_fee: this.formData.total_fee
@@ -165,6 +170,12 @@ export default {
 			this.payPopup.alipay = payInfo.alipay;
 			if (payInfo.mode === "link") {
 				// 跳转url链接支付
+				// 记录当前页面数据，因为支付完会强制关闭页面，因此下次进入任意页面后，应该在App.vue的onLaunch里再跳回来
+				let returnUrl = window.location.href;
+				// 在当前url上带上参数，代表是同步跳转过来的
+				returnUrl += returnUrl.indexOf("&") >- 1 ? "&" : "?";
+				returnUrl += `return=1&out_trade_no=${out_trade_no}`;
+				uni.setStorageSync("VksPay.returnUrl", returnUrl);
 				window.location.href = payInfo.qrcode;
 			} else if (payInfo.mode === "scheme") {
 				// 跳转scheme协议支付
@@ -341,6 +352,19 @@ export default {
 				let order = this.orders[this.formData.out_trade_no];
 				if (order && order.url) {
 					this.callPayment(order);
+				} else {
+					uni.showModal({
+						title: "提示",
+						content: `原订单已取消，请重新支付`,
+						showCancel: true,
+						confirmText: "重新支付",
+						cancelText: "取消",
+						success: (res) => {
+							if (res.confirm) {
+								this.createPayment();
+							}
+						}
+					});
 				}
 			} else {
 				// 支付成功
