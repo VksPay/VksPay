@@ -86,6 +86,10 @@
     "h5" : {
         "router" : {
             "mode" : "history"
-        }
+        },
+        "devServer" : {
+            "disableHostCheck" : true
+        },
+        "template" : "template.h5.html"
     }
 }

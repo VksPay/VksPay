@@ -8,8 +8,8 @@
 				// 先删除缓存，再跳转页面（因为只需要跳转一次即可）
 				uni.removeStorageSync("VksPay.returnUrl");
 				window.location.href = returnUrl;
-			// #endif
 			}
+			// #endif
 		},
 		onShow: function() {
 			console.log('App Show')

@@ -89,7 +89,6 @@
 <script>
 // 引入vkspay-test测试云对象
 const vkspayTest = uniCloud.importObject("vkspay-test");
-
 export default {
 	data() {
 		// 页面数据变量
@@ -250,6 +249,7 @@ export default {
 							// #endif
 							// #ifndef APP
 							window.location.href = payInfo.alipay;
+							window.location.href = payInfo.alipay;
 							// #endif
 						}
 					}
@@ -308,6 +308,17 @@ export default {
 					qrcode: url,
 					alipay: url,
 					wxpay: url
+				};
+			} else if (["h5-qq"].indexOf(this.h5Env) > -1) {
+				let alipayUrl = `alipays://platformapi/startapp?saId=10000007&qrcode=${url}`;
+				data = {
+					mode: "scheme",
+					qrcode: url,
+					//alipay: alipayUrl,
+					//alipay: `https://render.alipay.com/p/s/i?scheme=${encodeURIComponent(alipayUrl)}`,
+					alipay: `https://ulink.alipay.com?scheme=${encodeURIComponent(alipayUrl)}`,
+					//alipay: `https://ds.alipay.com?scheme=${encodeURIComponent(alipayUrl)}`,
+					wxpay: `weixin://scanqrcode`
 				};
 			} else {
 				// 如果是手机，也不需要
@@ -524,6 +535,10 @@ export default {
 			if (ua.match(/alipay/i) == "alipay") {
 				// 支付宝内
 				return "h5-alipay";
+			}
+			if (ua.match(/QQ/i) == "qq") {
+				// qq内
+				return "h5-qq";
 			}
 			// 外部 H5
 			return "h5";
