@@ -3,33 +3,38 @@
 		<!-- 页面示例开始 -->
 		<view class="page-content">
 			<view class="card">
-				<view style="margin-bottom: 8px">支付金额（单位元）：</view>
-				<input class="input" type="text" v-model="formData.total_fee" placeholder="支付金额" />
-				<view style="margin-bottom: 8px">订单号</view>
-				<input class="input" type="text" v-model="formData.out_trade_no" placeholder="订单号" />
-				<button class="button" type="primary" @click="createPayment">发起支付</button>
-				<button class="button" type="default" @click="afreshPayment" v-if="formData.out_trade_no">原订单发起支付</button>
-				<button class="button" type="default" @click="queryPayment">支付结果查询</button>
+				<view class="title">支付示例</view>
+				<view class="content">
+					<view style="margin-bottom: 8px">支付金额（单位元）：</view>
+					<input class="input" type="text" v-model="formData.total_fee" placeholder="支付金额" />
+					<view style="margin-bottom: 8px">订单号</view>
+					<input class="input" type="text" v-model="formData.out_trade_no" placeholder="订单号" />
+					<button class="button" type="primary" @click="createPayment">发起支付</button>
+					<button class="button" type="default" @click="afreshPayment" v-if="formData.out_trade_no">原订单发起支付</button>
+					<button class="button" type="default" @click="queryPayment">支付结果查询</button>
+				</view>
 			</view>
 
-			<view class="hr"></view>
-
 			<view class="card">
-				<view style="margin-bottom: 8px">退款（单位元）：</view>
-				<input class="input" type="text" v-model="formData.refund_fee" placeholder="退款金额" />
-				<view style="margin-bottom: 8px">退款单号</view>
-				<input class="input" type="text" v-model="formData.out_refund_no" placeholder="退款单号" />
-				<button class="button" type="warn" @click="refund">申请退款</button>
-				<button class="button" type="default" @click="queryRefund">退款结果查询</button>
+				<view class="title">退款示例</view>
+				<view class="content">
+					<view style="margin-bottom: 8px">退款（单位元）：</view>
+					<input class="input" type="text" v-model="formData.refund_fee" placeholder="退款金额" />
+					<view style="margin-bottom: 8px">退款单号</view>
+					<input class="input" type="text" v-model="formData.out_refund_no" placeholder="退款单号" />
+					<button class="button" type="warn" @click="refund">申请退款</button>
+					<button class="button" type="default" @click="queryRefund">退款结果查询</button>
+				</view>
 			</view>
 
-			<view class="hr"></view>
-
 			<view class="card">
-				<view style="margin-bottom: 8px">用户付款条形码</view>
-				<input class="input" type="text" v-model="formData.auth_code" placeholder="用户付款条形码" />
-				<button class="button" type="primary" @click="micropay">刷卡支付</button>
-				<button class="button" type="default" @click="queryPayment">支付结果查询</button>
+				<view class="title">刷条形码支付示例</view>
+				<view class="content">
+					<view style="margin-bottom: 8px">用户付款条形码</view>
+					<input class="input" type="text" v-model="formData.auth_code" placeholder="用户付款条形码" />
+					<button class="button" type="primary" @click="micropay">刷卡支付</button>
+					<button class="button" type="default" @click="queryPayment">支付结果查询</button>
+				</view>
 			</view>
 		</view>
 		<!-- 页面示例结束 -->
@@ -588,17 +593,25 @@ export default {
 </script>
 <style lang="scss" scoped>
 /* 示例页面样式开始 */
+page{
+	background-color: #f8f8f8;
+}
 .card {
-	padding: 15px;
+	margin: 10px;
+	background-color: #ffffff;
+	border-radius: 10px;
+	box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
+	.title{
+		padding: 15px;
+		font-weight: bold;
+		font-size: 17px;
+		border-bottom: 1px solid #ebeef5
+	}
+	.content{
+		padding: 15px;
+	}
 }
-.hr {
-	height: 10px;
-	background-color: #cecece;
-	width: calc(100%);
-	margin: 30px 0;
-	box-sizing: border-box;
-	display: block;
-}
+
 .page-content {
 	.input {
 		width: 100%;
